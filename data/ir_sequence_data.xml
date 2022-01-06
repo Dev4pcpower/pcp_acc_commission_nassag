@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="commission_invoice_sequence" model="ir.sequence">
+            <field name="name">Commission Invoice</field>
+            <field name="code">commission_app_inv_seq</field>
+            <field name="prefix">COMM/INV/</field>
+            <field name="padding">4</field>
+        </record>
+
+    </data>
+</odoo>
