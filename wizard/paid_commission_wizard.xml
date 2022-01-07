@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+
+        <record id="paid_commission_wizard_view" model="ir.ui.view">
+            <field name="name">paid.commission.wizard.view</field>
+            <field name="model">paid.commission.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Create Paid Commission">
+                    <h2>
+                        Do you want to create the Paid ?
+                    </h2>
+                    <footer>
+                        <button name="create_Paid" string="Create Invoice"
+                            type="object" class="oe_highlight" />
+                        or
+                        <button string="Cancel" type="object"
+                            special="cancel" class="oe_highlight" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="action_paid_commission_wizard" model="ir.actions.act_window">
+            <field name="name">Action Paid</field>
+            <field name="res_model">paid.commission.wizard</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="paid_commission_wizard_view"/>
+            <field name="target">new</field>
+            <field name="groups_id" eval="[(4, ref('account.group_account_invoice'))]"/>
+            <field name="binding_model_id" ref="account.model_account_move" />
+            <field name="binding_view_types">list</field>
+        </record>
+
+        <record id="action_add_to_call_queue" model="ir.actions.server">
+          <field name="name">Add to call queue</field>
+          <field name="type">ir.actions.server</field>
+          <field name="state">code</field>
+          <field name="model_id" ref="model_account_move" />
+          <field name="binding_model_id" ref="model_account_move"/>
+          <field name="code">
+            records.action_paid()
+          </field>
+        </record>
+</odoo>

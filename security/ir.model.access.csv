@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_commission_invoice_wizard,access_commission_invoice_wizard,model_commission_invoice_wizard,group_commission_invoicing,1,1,1,1
+access_paid_commission_wizard,access_paid_commission_wizard,model_paid_commission_wizard,group_commission_invoicing,1,1,1,1

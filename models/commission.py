@@ -60,6 +60,7 @@ class AccountMove(models.Model):
         self.write({'claim_state': 'Is Claimed'})
 
     def action_paid(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("pcp_acc_commission_nassag.action_paid_commission_wizard").read()[0]
         selected_ids = self.env.context.get('active_ids', [])
         selected_records = self.env['account.move'].browse(selected_ids)
         z = selected_records.customer_sales_person
@@ -69,7 +70,7 @@ class AccountMove(models.Model):
                 total = 0
                 for rec in selected_records:
                     total += rec.total_commission
+                return action
             else:
-                raise Warning('You Can Not Select Greater Than One customer sales person')
-
+                raise Warning('You Can Not Select More Than One customer sales person In this Action !')
 

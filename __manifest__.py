@@ -28,7 +28,7 @@
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
         'wizard/commission_invoice_wizard.xml',
-        'wizard/commission_invoice_wizard.xml',
+        'wizard/paid_commission_wizard.xml',
         'views/sale_order_commission_invoice.xml',
         'views/res_config_settings_views.xml',
         'views/account_move.xml',
