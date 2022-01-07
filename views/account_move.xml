@@ -27,6 +27,15 @@
                         <xpath expr="//field[@name='state']" position="after">
                               <field name="claim_state"   widget="badge" decoration-info="claim_state == 'Not Claim'" decoration-success="claim_state == 'Is Claimed'" />
                         </xpath>
+                        <xpath expr="//field[@name='claim_state']" position="after">
+                              <field name="total_commission"    />
+                        </xpath>
+                        <xpath expr="//button[@name='action_register_payment']" position="after">
+                              <button string="Paid Comm" name="action_paid"
+                                      type="object" class="oe_highlight"
+
+                              />
+                        </xpath>
                     </field>
                 </record>
 
