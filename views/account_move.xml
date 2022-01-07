@@ -16,5 +16,27 @@
 			    </xpath>
             </field>
         </record>
+       <record id="account_move_tree_view_inherit" model="ir.ui.view">
+            <field name="name">account_move_inherit_tree</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_out_invoice_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='invoice_partner_display_name']" position="after">
+			    	  <field name="customer_sales_person"   widget="Many2one"  />
+			    </xpath>
+                <xpath expr="//field[@name='state']" position="after">
+			    	  <field name="claim_state"   widget="badge" decoration-info="claim_state == 'Not Claim'" decoration-success="claim_state == 'Is Claimed'" />
+			    </xpath>
+            </field>
+        </record>
+
+        <record id="action_paid" model="ir.actions.server">
+            <field name="name">Action Paid</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="binding_model_id" ref="account.model_account_move" />
+            <field name="state">code</field>
+            <field name="code">records.action_paid()</field>
+        </record>
     </data>
 </odoo>

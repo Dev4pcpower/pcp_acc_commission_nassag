@@ -31,6 +31,7 @@
         'wizard/commission_invoice_wizard.xml',
         'views/sale_order_commission_invoice.xml',
         'views/res_config_settings_views.xml',
+        'views/account_move.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

@@ -18,15 +18,20 @@ class AccountMove(models.Model):
 
     is_commission = fields.Boolean(default=False)
     is_claim = fields.Boolean(default=False)
+    claim_state = fields.Selection([
+        ('Not Claim', 'Not Claim'),
+        ('Is Claimed', 'Is Claimed'),
+    ], 'Claim State', sort=False, readonly=True, default='Not Claim')
+    branch_id = fields.Many2one('res.branch', string='branch id')
+    customer_sales_person = fields.Many2one('nassag.salesperson', string='Customer Rep')
+    total_commission = fields.Float('Total Commission')
 
     def action_claim(self):
         active_id = self.id
         commission_lines = self.env['invoice.commission.line'].search([('invoice_sale_order_id', '=', active_id)])
 
         account_debit = self.env['res.config.settings'].search([])[-1]
-        if account_debit:
-            account_invoice_obj = self.env['account.move.line']
-
+        if account_debit.account_commission_debit.id:
             if not self.is_claim:
                 total = 0
                 for rec in commission_lines:
@@ -52,3 +57,19 @@ class AccountMove(models.Model):
         else:
             raise Warning('add debit and credit account in Sales settings.')
         self.write({'is_claim': True})
+        self.write({'claim_state': 'Is Claimed'})
+
+    def action_paid(self):
+        selected_ids = self.env.context.get('active_ids', [])
+        selected_records = self.env['account.move'].browse(selected_ids)
+        z = selected_records.customer_sales_person
+        for x in selected_records:
+            z = list(filter(lambda a: a != x.customer_sales_person, z))
+            if len(z) == 0:
+                total = 0
+                for rec in selected_records:
+                    total += rec.total_commission
+            else:
+                raise Warning('You Can Not Select Greater Than One customer sales person')
+
+

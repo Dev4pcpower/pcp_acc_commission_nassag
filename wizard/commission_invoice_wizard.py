@@ -5,6 +5,7 @@ from datetime import date, datetime
 
 class Commission_Invoice_Wizard(models.TransientModel):
     _name = "commission.invoice.wizard"
+    _inherit = 'mail.thread'
 
     def create_invoice(self):
 
@@ -14,23 +15,31 @@ class Commission_Invoice_Wizard(models.TransientModel):
         lab_req_obj = self.env['commission.line']
         account_invoice_obj = self.env['account.move']
         account_invoice_line_obj = self.env['invoice.commission.line']
+        sale_order = self.env['sale.order'].search([('id','=',active_ids)])
 
         for active_id in commission_lines:
             lab_req = self.env['commission.line'].search([('sale_order_id','=',active_ids)])
+            total = 0
+            for rec in lab_req:
+                total += rec.qty * rec.commission_value
             for i in lab_req:
                 i.validity_status = 'invoice'
                 if not i.is_invoiced:
                     invoice_vals = {
                         'name': self.env['ir.sequence'].next_by_code('commission_app_inv_seq'),
-                        'invoice_origin': i.partner_id or '',
+                        'invoice_origin': i.sale_order_id or '',
+                        'partner_id': sale_order.partner_id.id or '',
+                        'branch_id': i.branch_id or '',
+                        'currency_id': i.currency_id or '',
+                        'customer_sales_person':i.customer_sales_person.id,
                         'move_type': 'out_invoice',
                         'ref': False,
                         'invoice_payment_term_id': False,
-                        'fiscal_position_id': i.partner_id.property_account_position_id.id,
                         'team_id': False,
                         'invoice_date': date.today(),
-                        'company_id': i.partner_id.company_id.id or False,
+                        'company_id': i.company_id or False,
                         'is_commission': True,
+                        'total_commission':total,
                     }
                 else:
                     raise Warning('All ready Invoiced.')
@@ -40,6 +49,7 @@ class Commission_Invoice_Wizard(models.TransientModel):
                     'product_id_selected': i.product_id_selected.id,
                     'qty': i.qty,
                     'commission_value': i.commission_value,
+                    'customer_sales_person':i.customer_sales_person.id,
                     'total_commission_per_line': i.total_commission_per_line,
                     'total_commission_order': i.total_commission_order,
                 }
@@ -69,4 +79,5 @@ class Commission_Invoice_Wizard(models.TransientModel):
             msg_body = 'Commission Claim created'
             for msg in self:
                 msg.message_post(body=msg_body)
+                lab_req.is_invoiced = 'True'
             return result
