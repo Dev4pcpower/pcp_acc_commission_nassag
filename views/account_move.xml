@@ -25,7 +25,7 @@
                               <field name="customer_sales_person"   widget="Many2one"  />
                         </xpath>
                         <xpath expr="//field[@name='state']" position="after">
-                              <field name="claim_state"   widget="badge" decoration-info="claim_state == 'Not Claim'" decoration-success="claim_state == 'Is Claimed'" />
+                              <field name="claim_state"   widget="badge" decoration-warning="claim_state == 'Part Paid'" decoration-danger="claim_state == 'Total Paid'" decoration-info="claim_state == 'Not Claim'" decoration-success="claim_state == 'Is Claimed'" />
                         </xpath>
                         <xpath expr="//field[@name='claim_state']" position="after">
                               <field name="total_commission"    />

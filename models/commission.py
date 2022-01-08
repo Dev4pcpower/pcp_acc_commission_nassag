@@ -13,6 +13,18 @@ class CommissionLine(models.Model):
     is_invoiced = fields.Boolean(copy=False, default=False)
 
 
+class CommissionMoveLine(models.Model):
+    _name = 'commission.move.line'
+
+    branch_id = fields.Many2one('res.branch', string='branch id')
+    customer_sales_person = fields.Many2one('nassag.salesperson', string='Customer Rep')
+    total_commission = fields.Float('Total Commission')
+    exchange_amount = fields.Float('Exchange Amount')
+    rest_amount = fields.Float('Rest Amount')
+    paid_date = fields.Date("Paid Date")
+    invoice_id = fields.Many2many('account.move', string='invoice ids')
+
+
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
@@ -20,8 +32,8 @@ class AccountMove(models.Model):
     is_claim = fields.Boolean(default=False)
     claim_state = fields.Selection([
         ('Not Claim', 'Not Claim'),
-        ('Is Claimed', 'Is Claimed'),
-    ], 'Claim State', sort=False, readonly=True, default='Not Claim')
+        ('Is Claimed', 'Is Claimed'), ('Total Paid', 'Total Paid'), ('Part Paid', 'Part Paid'),
+    ], 'Commission State', sort=False, readonly=True, default='Not Claim')
     branch_id = fields.Many2one('res.branch', string='branch id')
     customer_sales_person = fields.Many2one('nassag.salesperson', string='Customer Rep')
     total_commission = fields.Float('Total Commission')
@@ -31,6 +43,7 @@ class AccountMove(models.Model):
         commission_lines = self.env['invoice.commission.line'].search([('invoice_sale_order_id', '=', active_id)])
 
         account_debit = self.env['res.config.settings'].search([])[-1]
+
         if account_debit.account_commission_debit.id:
             if not self.is_claim:
                 total = 0
@@ -75,7 +88,8 @@ class AccountMove(models.Model):
                     'view_mode': 'form',
                     'context': {
                         'default_customer_sales_person': selected_records.customer_sales_person.id,
-
+                        'default_total_commission': total,
+                        'default_invoice_id':  [(6,0,selected_records.ids)] ,
                     },
                     'target': 'new',
                     'type': 'ir.actions.act_window',
@@ -83,4 +97,3 @@ class AccountMove(models.Model):
 
             else:
                 raise Warning('You Can Not Select More Than One customer sales person In this Action !')
-

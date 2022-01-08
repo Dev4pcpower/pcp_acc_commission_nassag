@@ -49,16 +49,18 @@ class Commission_Invoice_Wizard(models.TransientModel):
                     'product_id_selected': i.product_id_selected.id,
                     'qty': i.qty,
                     'commission_value': i.commission_value,
-                    'customer_sales_person':i.customer_sales_person.id,
+                    'customer_sales_person':sale_order.customer_sales_person.id,
                     'total_commission_per_line': i.total_commission_per_line,
                     'total_commission_order': i.total_commission_order,
                 }
                 res.write({'invoice_commission_line_id': ([(0, 0, invoice_line_vals)])})
             list_of_ids.append(res.id)
             if list_of_ids:
-                imd = self.env['ir.model.data']
+
                 lab_req_obj_brw = lab_req_obj.browse(self._context.get('active_id'))
                 lab_req_obj_brw.write({'is_invoiced': True})
+
+                imd = self.env['ir.model.data']
                 action = imd.xmlid_to_object('account.action_move_out_invoice_type')
                 list_view_id = imd.xmlid_to_res_id('account.view_invoice_tree')
                 form_view_id = imd.xmlid_to_res_id('account.view_move_form')

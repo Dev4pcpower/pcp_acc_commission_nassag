@@ -11,25 +11,28 @@
                     <h2>
                         Do you want to create the Paid Commission?
                     </h2>
-                    <field name="customer_sales_person" />
+
+                    <group>
+                         <group >
+                             <field name="customer_sales_person" />
+                             <field name="paid_date" />
+                             <field name="invoice_id"  widget="many2many_tags"/>
+                             <field name="total_commission"/>
+                         </group>
+                         <group >
+                             <field name="exchange_amount" />
+                             <field name="rest_amount" />
+                         </group>
+                    </group>
                     <footer>
-                        <button name="create_Paid" string="Create Invoice"
+                        <button name="create_paid" string="Create Paid"
                             type="object" class="oe_highlight" />
-                        or
+
                         <button string="Cancel" type="object"
                             special="cancel" class="oe_highlight" />
                     </footer>
                 </form>
             </field>
         </record>
-        <record id="action_paid_commission_wizard" model="ir.actions.act_window">
-            <field name="name">Action Paid</field>
-            <field name="res_model">paid.commission.wizard</field>
-            <field name="view_mode">tree,form</field>
-            <field name="view_id" ref="paid_commission_wizard_view"/>
-            <field name="target">new</field>
-            <field name="groups_id" eval="[(4, ref('account.group_account_invoice'))]"/>
-            <field name="binding_model_id" ref="account.model_account_move" />
-            <field name="binding_view_types">list</field>
-        </record>
+
 </odoo>
