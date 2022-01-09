@@ -21,8 +21,9 @@ class CommissionMoveLine(models.Model):
     total_commission = fields.Float('Total Commission')
     exchange_amount = fields.Float('Exchange Amount')
     rest_amount = fields.Float('Rest Amount')
+    hash_amount = fields.Float('Hash Amount')
     paid_date = fields.Date("Paid Date")
-    invoice_id = fields.Many2many('account.move', string='invoice ids')
+    invoice_ids = fields.Many2many('account.move', string='invoice ids')
 
 
 class AccountMove(models.Model):
@@ -37,12 +38,13 @@ class AccountMove(models.Model):
     branch_id = fields.Many2one('res.branch', string='branch id')
     customer_sales_person = fields.Many2one('nassag.salesperson', string='Customer Rep')
     total_commission = fields.Float('Total Commission')
+    hash_amount = fields.Float('Hash Amount')
 
     def action_claim(self):
         active_id = self.id
         commission_lines = self.env['invoice.commission.line'].search([('invoice_sale_order_id', '=', active_id)])
 
-        account_debit = self.env['res.config.settings'].search([])[-1]
+        account_debit = self.env['res.config.settings'].search([])[-1] or False
 
         if account_debit.account_commission_debit.id:
             if not self.is_claim:
@@ -83,7 +85,7 @@ class AccountMove(models.Model):
                 for rec in selected_records:
                     total += rec.total_commission
                 return {
-                    'name': _('Register Payment'),
+                    'name': _('Commission Paid'),
                     'res_model': 'paid.commission.wizard',
                     'view_mode': 'form',
                     'context': {
