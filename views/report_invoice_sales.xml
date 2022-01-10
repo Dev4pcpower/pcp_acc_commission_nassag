@@ -10,7 +10,8 @@
                     <field name="total_commission"/>
                     <field name="change_amounts"/>
                     <field name="invoice_ids"  widget="many2many_tags"/>
-                    <field name="claim_state" />
+                    <field name="product_id_selected"  widget="many2many_tags"/>
+                    <field name="claim_state" widget="badge" decoration-warning="claim_state == 'Part Paid'" decoration-danger="claim_state == 'Total Paid'" decoration-info="claim_state == 'Not Claim'" decoration-success="claim_state == 'Is Claimed'"  />
                 </tree>
             </field>
         </record>

@@ -32,6 +32,7 @@ class Commission_Invoice_Wizard(models.TransientModel):
                         'branch_id': i.branch_id or '',
                         'currency_id': i.currency_id or '',
                         'customer_sales_person':i.customer_sales_person.id,
+                        'product_id_selected':i.product_id_selected.id,
                         'move_type': 'out_invoice',
                         'ref': False,
                         'invoice_payment_term_id': False,

@@ -24,6 +24,7 @@ class CommissionMoveLine(models.Model):
     hash_amount = fields.Float('Hash Amount')
     paid_date = fields.Date("Paid Date")
     invoice_ids = fields.Many2many('account.move','account_move_commission_move_line_rel', string='invoice ids')
+    product_id_selected = fields.Many2many('product.product', string='Product')
     claim_state = fields.Selection([ ('Total Paid', 'Total Paid'), ('Part Paid', 'Part Paid'),
     ], 'Commission State', sort=False, readonly=True, default='Total Paid')
 
@@ -40,6 +41,7 @@ class AccountMove(models.Model):
     customer_sales_person = fields.Many2one('nassag.salesperson', string='Customer Rep')
     total_commission = fields.Float('Total Commission')
     hash_amount = fields.Float('Hash Amount')
+    product_id_selected = fields.Many2one('product.product', string='Product')
 
     def action_claim(self):
         active_id = self.id
@@ -93,6 +95,7 @@ class AccountMove(models.Model):
                         'default_customer_sales_person': selected_records.customer_sales_person.id,
                         'default_total_commission': total,
                         'default_invoice_id':  [(6,0,selected_records.ids)] ,
+                        'default_product_id_selected': [(6, 0, selected_records.product_id_selected.ids)],
 
                     },
                     'target': 'new',

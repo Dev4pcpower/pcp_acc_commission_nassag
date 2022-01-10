@@ -13,6 +13,7 @@ class Paid_Commission_Wizard(models.TransientModel):
     change_amounts = fields.Float(string='change Amounts', readonly=0)
     paid_date = fields.Date(string="Paid Date", required=True, default=fields.Date.today)
     invoice_id = fields.Many2many('account.move', string='invoice ids', readonly=1)
+    product_id_selected = fields.Many2many('product.product', string='Product')
 
     def create_paid(self):
         for rec in self:
@@ -29,6 +30,7 @@ class Paid_Commission_Wizard(models.TransientModel):
                     'rest_amount': self.rest_amount,
                     'paid_date': self.paid_date,
                     'invoice_ids': [(6, 0, self.ids)],
+                    'product_id_selected': [(6, 0, self.product_id_selected.ids)],
                 }
                 account_invoice_obj = self.env['commission.move.line']
                 account_invoice_obj.create(invoice_line_vals)
@@ -61,6 +63,8 @@ class Paid_Commission_Wizard(models.TransientModel):
                     'rest_amount': self.rest_amount,
                     'paid_date': self.paid_date,
                     'invoice_ids': [(6, 0, self.ids)],
+                    'product_id_selected': [(6, 0, self.product_id_selected.ids)],
+
                 }
                 account_invoice_obj = self.env['commission.move.line']
                 account_invoice_obj.create(invoice_line_vals)
