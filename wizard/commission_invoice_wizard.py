@@ -42,7 +42,7 @@ class Commission_Invoice_Wizard(models.TransientModel):
                         'total_commission':total,
                     }
                 else:
-                    raise Warning('All ready Invoiced.')
+                    raise UserError(_('All ready Invoiced.'))
             res = account_invoice_obj.create(invoice_vals)
             for i in lab_req:
                 invoice_line_vals = {
@@ -77,7 +77,7 @@ class Commission_Invoice_Wizard(models.TransientModel):
                 if list_of_ids:
                     result['domain'] = "[('id','in',%s)]" % list_of_ids
                 else:
-                    raise Warning('All ready Invoiced.')
+                    raise UserError(_('All ready Invoiced.'))
             msg_body = 'Commission Claim created'
             for msg in self:
                 msg.message_post(body=msg_body)

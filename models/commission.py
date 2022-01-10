@@ -19,12 +19,13 @@ class CommissionMoveLine(models.Model):
     branch_id = fields.Many2one('res.branch', string='branch id')
     customer_sales_person = fields.Many2one('nassag.salesperson', string='Customer Rep')
     total_commission = fields.Float('Total Commission')
-    exchange_amount = fields.Float('Exchange Amount')
+    change_amounts = fields.Float('Exchange Amount')
     rest_amount = fields.Float('Rest Amount')
     hash_amount = fields.Float('Hash Amount')
     paid_date = fields.Date("Paid Date")
-    invoice_ids = fields.Many2many('account.move', string='invoice ids')
-
+    invoice_ids = fields.Many2many('account.move','account_move_commission_move_line_rel', string='invoice ids')
+    claim_state = fields.Selection([ ('Total Paid', 'Total Paid'), ('Part Paid', 'Part Paid'),
+    ], 'Commission State', sort=False, readonly=True, default='Total Paid')
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -70,7 +71,7 @@ class AccountMove(models.Model):
             else:
                 raise Warning('All ready Claimed.')
         else:
-            raise Warning('add debit and credit account in Sales settings.')
+            raise UserError(_('add debit and credit account in Sales settings.'))
         self.write({'is_claim': True})
         self.write({'claim_state': 'Is Claimed'})
 
@@ -92,10 +93,11 @@ class AccountMove(models.Model):
                         'default_customer_sales_person': selected_records.customer_sales_person.id,
                         'default_total_commission': total,
                         'default_invoice_id':  [(6,0,selected_records.ids)] ,
+
                     },
                     'target': 'new',
                     'type': 'ir.actions.act_window',
                 }
 
             else:
-                raise Warning('You Can Not Select More Than One customer sales person In this Action !')
+                raise UserError(_('You Can Not Select More Than One customer sales person In this Action !'))

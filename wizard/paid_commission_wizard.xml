@@ -20,7 +20,7 @@
                              <field name="total_commission"/>
                          </group>
                          <group >
-                             <field name="exchange_amount" />
+                             <field name="change_amounts" />
                              <field name="rest_amount" />
                          </group>
                     </group>

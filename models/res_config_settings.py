@@ -15,7 +15,15 @@ class ResConfigSettings(models.TransientModel):
 
     def set_values(self):
         res = super(ResConfigSettings, self).set_values()
-        self.env['ir.config_parameter'].set_param('account_commission_debit', self.account_commission_debit)
-        self.env['ir.config_parameter'].set_param('account_commission_credit', self.account_commission_credit)
+        self.env['ir.config_parameter'].set_param('account_commission_debit', self.account_commission_debit.id)
+        self.env['ir.config_parameter'].set_param('account_commission_credit', self.account_commission_credit.id)
         return res
 
+    @api.model
+    def get_values(self):
+        res = super(ResConfigSettings, self).get_values()
+
+        res['account_commission_debit'] = int(self.env['ir.config_parameter'].sudo().get_param('account_commission_debit', default=0))
+        res['account_commission_credit'] = int(self.env['ir.config_parameter'].sudo().get_param('account_commission_credit', default=0))
+
+        return res
