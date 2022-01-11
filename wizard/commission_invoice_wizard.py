@@ -16,6 +16,10 @@ class Commission_Invoice_Wizard(models.TransientModel):
         account_invoice_obj = self.env['account.move']
         account_invoice_line_obj = self.env['invoice.commission.line']
         sale_order = self.env['sale.order'].search([('id','=',active_ids)])
+        sale_order_line = self.env['sale.order.line'].search([('order_id', '=', sale_order.id)])
+        invoiceTotal = 0
+        for x in sale_order_line:
+            invoiceTotal += x.price_total
 
         for active_id in commission_lines:
             lab_req = self.env['commission.line'].search([('sale_order_id','=',active_ids)])
@@ -27,7 +31,7 @@ class Commission_Invoice_Wizard(models.TransientModel):
                 if not i.is_invoiced:
                     invoice_vals = {
                         'name': self.env['ir.sequence'].next_by_code('commission_app_inv_seq'),
-                        'invoice_origin': i.sale_order_id or '',
+                        'invoice_origin': i.sale_order_id.id or '',
                         'partner_id': sale_order.partner_id.id or '',
                         'branch_id': i.branch_id or '',
                         'currency_id': i.currency_id or '',
@@ -41,6 +45,7 @@ class Commission_Invoice_Wizard(models.TransientModel):
                         'company_id': i.company_id or False,
                         'is_commission': True,
                         'total_commission':total,
+                        'invoice_amount':invoiceTotal,
                     }
                 else:
                     raise UserError(_('All ready Invoiced.'))

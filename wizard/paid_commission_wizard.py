@@ -11,6 +11,7 @@ class Paid_Commission_Wizard(models.TransientModel):
     rest_amount = fields.Float(string='Rest Amount', readonly=1)
     change_amount = fields.Float(string='change Amount',readonly=0)
     change_amounts = fields.Float(string='change Amounts', readonly=0)
+    hash_amount = fields.Float('Hash Amount')
     paid_date = fields.Date(string="Paid Date", required=True, default=fields.Date.today)
     invoice_id = fields.Many2many('account.move', string='invoice ids', readonly=1)
     product_id_selected = fields.Many2many('product.product', string='Product')
@@ -21,7 +22,7 @@ class Paid_Commission_Wizard(models.TransientModel):
                 raise UserError(_("change amount can't be zero"))
             if rec.rest_amount > 0:
                 for x in self:
-                        x.claim_state = 'Part Paid'
+                    x.claim_state = 'Part Paid'
             if self.change_amounts < rec.total_commission:
                 invoice_line_vals = {
                     'customer_sales_person': self.customer_sales_person.id,

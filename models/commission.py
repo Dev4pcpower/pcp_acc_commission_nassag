@@ -42,6 +42,7 @@ class AccountMove(models.Model):
     total_commission = fields.Float('Total Commission')
     hash_amount = fields.Float('Hash Amount')
     product_id_selected = fields.Many2one('product.product', string='Product')
+    invoice_amount = fields.Float('Invoice Amount')
 
     def action_claim(self):
         active_id = self.id
