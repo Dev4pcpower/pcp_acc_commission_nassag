@@ -30,6 +30,7 @@ class Paid_Commission_Wizard(models.TransientModel):
                     'change_amounts': self.change_amounts,
                     'rest_amount': self.rest_amount,
                     'paid_date': self.paid_date,
+                    'claim_state': 'Part Paid',
                     'invoice_ids': [(6, 0, self.ids)],
                     'product_id_selected': [(6, 0, self.product_id_selected.ids)],
                 }
@@ -62,6 +63,7 @@ class Paid_Commission_Wizard(models.TransientModel):
                     'total_commission': self.total_commission,
                     'change_amounts': self.change_amounts,
                     'rest_amount': self.rest_amount,
+                    'claim_state': 'Total Paid',
                     'paid_date': self.paid_date,
                     'invoice_ids': [(6, 0, self.ids)],
                     'product_id_selected': [(6, 0, self.product_id_selected.ids)],
