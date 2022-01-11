@@ -105,7 +105,7 @@ class AccountMove(models.Model):
                         'target': 'new',
                         'type': 'ir.actions.act_window',
                     }
-                if rec.claim_state == 'Total Paid':
+                else:
                     return {
                         'name': _('Commission Paid'),
                         'res_model': 'paid.commission.wizard',
