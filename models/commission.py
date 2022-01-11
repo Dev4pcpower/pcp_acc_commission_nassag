@@ -86,22 +86,39 @@ class AccountMove(models.Model):
             z = list(filter(lambda a: a != x.customer_sales_person, z))
             if len(z) == 0:
                 total = 0
+                hash_amount = 0
                 for rec in selected_records:
                     total += rec.total_commission
-                return {
-                    'name': _('Commission Paid'),
-                    'res_model': 'paid.commission.wizard',
-                    'view_mode': 'form',
-                    'context': {
-                        'default_customer_sales_person': selected_records.customer_sales_person.id,
-                        'default_total_commission': total,
-                        'default_invoice_id':  [(6,0,selected_records.ids)] ,
-                        'default_product_id_selected': [(6, 0, selected_records.product_id_selected.ids)],
+                    hash_amount += rec.hash_amount
+                if rec.claim_state =='Part Paid':
+                    return {
+                        'name': _('Commission Paid'),
+                        'res_model': 'paid.commission.wizard',
+                        'view_mode': 'form',
+                        'context': {
+                            'default_customer_sales_person': selected_records.customer_sales_person.id,
+                            'default_total_commission': hash_amount,
+                            'default_invoice_id':  [(6,0,selected_records.ids)] ,
+                            'default_product_id_selected': [(6, 0, selected_records.product_id_selected.ids)],
 
-                    },
-                    'target': 'new',
-                    'type': 'ir.actions.act_window',
-                }
+                        },
+                        'target': 'new',
+                        'type': 'ir.actions.act_window',
+                    }
+                if rec.claim_state == 'Total Paid':
+                    return {
+                        'name': _('Commission Paid'),
+                        'res_model': 'paid.commission.wizard',
+                        'view_mode': 'form',
+                        'context': {
+                            'default_customer_sales_person': selected_records.customer_sales_person.id,
+                            'default_total_commission': total,
+                            'default_invoice_id': [(6, 0, selected_records.ids)],
+                            'default_product_id_selected': [(6, 0, selected_records.product_id_selected.ids)],
 
+                        },
+                        'target': 'new',
+                        'type': 'ir.actions.act_window',
+                    }
             else:
                 raise UserError(_('You Can Not Select More Than One customer sales person In this Action !'))

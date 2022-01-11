@@ -18,6 +18,7 @@ class Paid_Commission_Wizard(models.TransientModel):
 
     def create_paid(self):
         for rec in self:
+
             if rec.change_amounts == 0:
                 raise UserError(_("change amount can't be zero"))
             if rec.rest_amount > 0:
@@ -41,6 +42,7 @@ class Paid_Commission_Wizard(models.TransientModel):
                 selected_records = self.env['account.move'].browse(selected_ids)
                 for x in selected_records:
                     x.claim_state = 'Part Paid'
+                    x.hash_amount = x.total_commission - self.change_amounts
 
                 imd = self.env['ir.model.data']
                 action = imd.xmlid_to_object('pcp_acc_commission_nassag.action_account_bank_statement_type')
