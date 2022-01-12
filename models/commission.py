@@ -96,7 +96,7 @@ class AccountMove(models.Model):
                 hash_amount = 0
                 for rec in selected_records:
                     total += rec.total_commission
-                    hash_amount += rec.hash_amount
+
                 if rec.claim_state == 'Part Paid':
                     return {
                         'name': _('Commission Paid'),
@@ -104,7 +104,7 @@ class AccountMove(models.Model):
                         'view_mode': 'form',
                         'context': {
                             'default_customer_sales_person': selected_records.customer_sales_person.id,
-                            'default_total_commission': hash_amount,
+                            'default_total_commission': rec.hash_amount,
                             'default_invoice_id': [(6, 0, selected_records.ids)],
                             'default_product_id_selected': [(6, 0, selected_records.product_id_selected.ids)],
 

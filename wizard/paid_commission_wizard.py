@@ -9,7 +9,7 @@ class Paid_Commission_Wizard(models.TransientModel):
     customer_sales_person = fields.Many2one('nassag.salesperson', string='Customer Rep', readonly=1)
     total_commission = fields.Float(string='Total Commission', readonly=1)
     rest_amount = fields.Float(string='Rest Amount', readonly=1)
-    change_amount = fields.Float(string='change Amount',readonly=0)
+    change_amount = fields.Float(string='change Amount', readonly=0)
     change_amounts = fields.Float(string='change Amounts', readonly=0)
     hash_amount = fields.Float('Hash Amount')
     paid_date = fields.Date(string="Paid Date", required=True, default=fields.Date.today)
@@ -40,10 +40,9 @@ class Paid_Commission_Wizard(models.TransientModel):
                 account_invoice_obj = self.env['commission.move.line']
                 account_invoice_obj.create(invoice_line_vals)
 
-
                 for x in selected_records:
                     x.claim_state = 'Part Paid'
-                    x.hash_amount = x.total_commission - self.change_amounts
+                    x.hash_amount = self.total_commission - self.change_amounts
 
                 imd = self.env['ir.model.data']
                 action = imd.xmlid_to_object('pcp_acc_commission_nassag.action_account_bank_statement_type')
@@ -68,7 +67,7 @@ class Paid_Commission_Wizard(models.TransientModel):
                     'rest_amount': self.rest_amount,
                     'claim_state': 'Total Paid',
                     'paid_date': self.paid_date,
-                    'invoice_ids': [(6, 0, self.ids)],
+                    'invoice_ids': [(6, 0, selected_records.ids)],
                     'product_id_selected': [(6, 0, self.product_id_selected.ids)],
 
                 }
@@ -78,7 +77,7 @@ class Paid_Commission_Wizard(models.TransientModel):
                 selected_ids = self.env.context.get('active_ids', [])
                 selected_records = self.env['account.move'].browse(selected_ids)
                 for x in selected_records:
-                        x.claim_state = 'Total Paid'
+                    x.claim_state = 'Total Paid'
 
                 imd = self.env['ir.model.data']
                 action = imd.xmlid_to_object('pcp_acc_commission_nassag.action_account_bank_statement_type')
@@ -93,10 +92,10 @@ class Paid_Commission_Wizard(models.TransientModel):
                     'views': [[form_view_id, 'form'], [list_view_id, 'tree']],
                     'target': action.target,
                     'context': {
-                            'default_name': selected_records.name,
-                            'default_invoice_id': [(6, 0, selected_records.ids)],
-                            'default_journal_id': journal.id,
-                        },
+                        'default_name': selected_records.name,
+                        'default_invoice_id': [(6, 0, selected_records.ids)],
+                        'default_journal_id': journal.id,
+                    },
                     'res_model': action.res_model,
                 }
                 return result
