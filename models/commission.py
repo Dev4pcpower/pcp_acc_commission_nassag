@@ -23,10 +23,17 @@ class CommissionMoveLine(models.Model):
     rest_amount = fields.Float('Rest Amount')
     hash_amount = fields.Float('Hash Amount')
     paid_date = fields.Date("Paid Date")
-    invoice_ids = fields.Many2many('account.move','account_move_commission_move_line_rel', string='invoice ids')
+    invoice_ids = fields.Many2many('account.move', string='invoice ids')
     product_id_selected = fields.Many2many('product.product', string='Product')
-    claim_state = fields.Selection([ ('Total Paid', 'Total Paid'), ('Part Paid', 'Part Paid'),
-    ], 'Commission State', sort=False, readonly=True, default='Total Paid')
+    claim_state = fields.Selection([('Total Paid', 'Total Paid'), ('Part Paid', 'Part Paid'),
+                                    ], 'Commission State', sort=False, readonly=True, default='Total Paid')
+
+
+class AccountBankStatement(models.Model):
+    _inherit = 'account.bank.statement'
+
+    invoice_id = fields.Many2many('account.move')
+
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -90,7 +97,7 @@ class AccountMove(models.Model):
                 for rec in selected_records:
                     total += rec.total_commission
                     hash_amount += rec.hash_amount
-                if rec.claim_state =='Part Paid':
+                if rec.claim_state == 'Part Paid':
                     return {
                         'name': _('Commission Paid'),
                         'res_model': 'paid.commission.wizard',
@@ -98,7 +105,7 @@ class AccountMove(models.Model):
                         'context': {
                             'default_customer_sales_person': selected_records.customer_sales_person.id,
                             'default_total_commission': hash_amount,
-                            'default_invoice_id':  [(6,0,selected_records.ids)] ,
+                            'default_invoice_id': [(6, 0, selected_records.ids)],
                             'default_product_id_selected': [(6, 0, selected_records.product_id_selected.ids)],
 
                         },
