@@ -15,12 +15,24 @@
                 </tree>
             </field>
         </record>
-
+        <record id="commission_move_line_report_pivot" model="ir.ui.view">
+                    <field name="name">commission.move.line.pivot</field>
+                    <field name="model">commission.move.line</field>
+                    <field name="arch" type="xml">
+                        <pivot string="extended periods list History Analysis">
+                           <field name="customer_sales_person" type="row"/>
+                           <field name="total_commission" type="measure"/>
+                            <field name="change_amounts" type="measure"/>
+                           <field name="claim_state" type="col"/>
+                            <field name="invoice_ids" type="col"/>
+                        </pivot>
+                    </field>
+                </record>
         <record id="commission_move_line_act_window" model="ir.actions.act_window">
             <field name="name">commission move line</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">commission.move.line</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">tree,pivot,form</field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
                     commission move line
