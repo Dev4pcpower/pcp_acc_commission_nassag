@@ -43,11 +43,18 @@ class AccountBankStatement(models.Model):
         if vals[0]["is_commission"]:
             comm = self.env['commission.move.line'].search([('invoice_ids', '=', vals[0]['invoice_id'])])
             ones = comm.env['commission.move.line'].search([])[-1]
+
+            move = self.env['account.move'].search([('id', '=', vals[0]['invoice_id'])])
+
             if vals[0]['total_commission'] == vals[0]['change_amounts']:
                 for x in ones:
                     x.update({'claim_state': 'Total Paid'})
+                for x in move:
+                    x.update({'claim_state': 'Total Paid'})
             if vals[0]['total_commission'] > vals[0]['change_amounts']:
                 for x in comm:
+                    x.update({'claim_state': 'Part Paid'})
+                for x in move:
                     x.update({'claim_state': 'Part Paid'})
 
         return res
