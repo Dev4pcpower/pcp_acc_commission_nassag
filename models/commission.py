@@ -25,14 +25,29 @@ class CommissionMoveLine(models.Model):
     paid_date = fields.Date("Paid Date")
     invoice_ids = fields.Many2many('account.move', string='invoice ids')
     product_id_selected = fields.Many2many('product.product', string='Product')
-    claim_state = fields.Selection([('Total Paid', 'Total Paid'), ('Part Paid', 'Part Paid'),
-                                    ], 'Commission State', sort=False, readonly=True, default='Total Paid')
+    claim_state = fields.Selection([('Total Paid', 'Total Paid'), ('Part Paid', 'Part Paid'),('Not Paid', 'Not Paid'),
+                                    ], 'Commission State', sort=False, readonly=True, default='Not Paid')
 
 
 class AccountBankStatement(models.Model):
     _inherit = 'account.bank.statement'
 
-    invoice_id = fields.Many2many('account.move')
+    invoice_id = fields.Many2one('commission.move.line')
+    is_commission = fields.Boolean(default=False)
+    total_commission = fields.Float(string='Total Commission')
+    change_amounts = fields.Float(string='change Amounts')
+
+    @api.model_create_multi
+    def create(self, vals):
+        res = super(AccountBankStatement, self).create(vals)
+        if vals[0]["is_commission"]:
+            comm = self.env['commission.move.line'].search([('id', '=', invoice_id.id)])
+            if vals[0]['total_commission'] == vals[0]['change_amounts']:
+                comm.update({'claim_state': 'ToTal Paid'})
+            if vals[0]['total_commission'] > vals[0]['change_amounts']:
+                comm.update({'claim_state': 'Part Paid'})
+
+        return res
 
 
 class AccountMove(models.Model):
@@ -88,10 +103,10 @@ class AccountMove(models.Model):
     def action_paid(self):
         selected_ids = self.env.context.get('active_ids', [])
         selected_records = self.env['account.move'].browse(selected_ids)
-        z = selected_records.customer_sales_person
+
         for x in selected_records:
-            z = list(filter(lambda a: a != x.customer_sales_person, z))
-            if len(z) == 0:
+            # z = list(filter(lambda a: a != x.customer_sales_person, z))
+            if len(selected_ids) == 1:
                 total = 0
                 hash_amount = 0
                 for rec in selected_records:

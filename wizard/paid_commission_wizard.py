@@ -19,8 +19,8 @@ class Paid_Commission_Wizard(models.TransientModel):
     def create_paid(self):
         selected_ids = self.env.context.get('active_ids', [])
         selected_records = self.env['account.move'].browse(selected_ids)
+        journal = self.env['account.journal'].search([('type', '=', 'cash')])
         for rec in self:
-
             if rec.change_amounts == 0:
                 raise UserError(_("change amount can't be zero"))
             if rec.rest_amount > 0:
@@ -33,7 +33,7 @@ class Paid_Commission_Wizard(models.TransientModel):
                     'change_amounts': self.change_amounts,
                     'rest_amount': self.rest_amount,
                     'paid_date': self.paid_date,
-                    'claim_state': 'Part Paid',
+                    #'claim_state': 'Part Paid',
                     'invoice_ids': [(6, 0, selected_records.ids)],
                     'product_id_selected': [(6, 0, self.product_id_selected.ids)],
                 }
@@ -54,7 +54,14 @@ class Paid_Commission_Wizard(models.TransientModel):
                     'type': action.type,
                     'views': [[form_view_id, 'form'], [list_view_id, 'tree']],
                     'target': action.target,
-                    'context': action.context,
+                    'context': {
+                        'default_name': selected_records.name,
+                        'default_invoice_id': [(6, 0, selected_records.ids)],
+                        'default_journal_id': journal.id,
+                        'default_is_commission': True,
+                        'default_total_commission': self.total_commission,
+                        'default_change_amounts': self.change_amounts,
+                    },
                     'res_model': action.res_model,
                 }
                 return result
@@ -65,7 +72,7 @@ class Paid_Commission_Wizard(models.TransientModel):
                     'total_commission': self.total_commission,
                     'change_amounts': self.change_amounts,
                     'rest_amount': self.rest_amount,
-                    'claim_state': 'Total Paid',
+                    #'claim_state': 'Total Paid',
                     'paid_date': self.paid_date,
                     'invoice_ids': [(6, 0, selected_records.ids)],
                     'product_id_selected': [(6, 0, self.product_id_selected.ids)],
@@ -83,8 +90,7 @@ class Paid_Commission_Wizard(models.TransientModel):
                 action = imd.xmlid_to_object('pcp_acc_commission_nassag.action_account_bank_statement_type')
                 list_view_id = imd.xmlid_to_res_id('account.view_bank_statement_tree')
                 form_view_id = imd.xmlid_to_res_id('account.view_bank_statement_form')
-                journal = self.env['account.journal'].search(
-                    [('type', '=', 'cash')])
+
                 result = {
                     'name': action.name,
                     'help': action.help,
@@ -95,6 +101,9 @@ class Paid_Commission_Wizard(models.TransientModel):
                         'default_name': selected_records.name,
                         'default_invoice_id': [(6, 0, selected_records.ids)],
                         'default_journal_id': journal.id,
+                        'default_is_commission': True,
+                        'default_total_commission':self.total_commission,
+                        'default_change_amounts': self.change_amounts,
                     },
                     'res_model': action.res_model,
                 }
