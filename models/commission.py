@@ -23,7 +23,7 @@ class CommissionMoveLine(models.Model):
     rest_amount = fields.Float('Rest Amount')
     hash_amount = fields.Float('Hash Amount')
     paid_date = fields.Date("Paid Date")
-    invoice_ids = fields.Many2many('account.move', string='invoice ids')
+    invoice_ids = fields.Many2one('account.move', string='invoice ids')
     product_id_selected = fields.Many2many('product.product', string='Product')
     claim_state = fields.Selection([('Total Paid', 'Total Paid'), ('Part Paid', 'Part Paid'),('Not Paid', 'Not Paid'),
                                     ], 'Commission State', sort=False, readonly=True, default='Not Paid')
@@ -32,7 +32,7 @@ class CommissionMoveLine(models.Model):
 class AccountBankStatement(models.Model):
     _inherit = 'account.bank.statement'
 
-    invoice_id = fields.Many2one('commission.move.line')
+    invoice_id = fields.Many2one('account.move')
     is_commission = fields.Boolean(default=False)
     total_commission = fields.Float(string='Total Commission')
     change_amounts = fields.Float(string='change Amounts')
@@ -41,11 +41,14 @@ class AccountBankStatement(models.Model):
     def create(self, vals):
         res = super(AccountBankStatement, self).create(vals)
         if vals[0]["is_commission"]:
-            comm = self.env['commission.move.line'].search([('id', '=', invoice_id.id)])
+            comm = self.env['commission.move.line'].search([('invoice_ids', '=', vals[0]['invoice_id'])])
+            ones = comm.env['commission.move.line'].search([])[-1]
             if vals[0]['total_commission'] == vals[0]['change_amounts']:
-                comm.update({'claim_state': 'ToTal Paid'})
+                for x in ones:
+                    x.update({'claim_state': 'Total Paid'})
             if vals[0]['total_commission'] > vals[0]['change_amounts']:
-                comm.update({'claim_state': 'Part Paid'})
+                for x in comm:
+                    x.update({'claim_state': 'Part Paid'})
 
         return res
 
@@ -120,7 +123,7 @@ class AccountMove(models.Model):
                         'context': {
                             'default_customer_sales_person': selected_records.customer_sales_person.id,
                             'default_total_commission': rec.hash_amount,
-                            'default_invoice_id': [(6, 0, selected_records.ids)],
+                            'default_invoice_id':  selected_records.id,
                             'default_product_id_selected': [(6, 0, selected_records.product_id_selected.ids)],
 
                         },
@@ -135,7 +138,7 @@ class AccountMove(models.Model):
                         'context': {
                             'default_customer_sales_person': selected_records.customer_sales_person.id,
                             'default_total_commission': total,
-                            'default_invoice_id': [(6, 0, selected_records.ids)],
+                            'default_invoice_id': selected_records.id,
                             'default_product_id_selected': [(6, 0, selected_records.product_id_selected.ids)],
 
                         },

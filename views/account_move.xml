@@ -26,6 +26,7 @@
                               <field name="is_commission"  attrs="{'invisible': [(True)]}" />
                             <field name="total_commission"  attrs="{'invisible': [(True)]}" />
                             <field name="change_amounts"  attrs="{'invisible': [(True)]}" />
+                            <field name="invoice_id"  attrs="{'invisible': [(True)]}" />
                         </xpath>
                     </field>
                 </record>

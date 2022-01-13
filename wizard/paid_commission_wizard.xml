@@ -16,7 +16,7 @@
                          <group >
                              <field name="customer_sales_person" />
                              <field name="paid_date" />
-                             <field name="invoice_id"  widget="many2many_tags"/>
+                             <field name="invoice_id"  widget="Many2one"/>
                              <field name="product_id_selected"  widget="many2many_tags"/>
 
                          </group>
