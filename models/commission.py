@@ -25,7 +25,7 @@ class CommissionMoveLine(models.Model):
     paid_date = fields.Date("Paid Date")
     invoice_ids = fields.Many2one('account.move', string='invoice ids')
     product_id_selected = fields.Many2many('product.product', string='Product')
-    claim_state = fields.Selection([('Total Paid', 'Total Paid'), ('Part Paid', 'Part Paid'),('Not Paid', 'Not Paid'),
+    claim_state = fields.Selection([('Total Paid', 'Total Paid'), ('Part Paid', 'Part Paid'), ('Not Paid', 'Not Paid'),
                                     ], 'Commission State', sort=False, readonly=True, default='Not Paid')
 
 
@@ -79,8 +79,10 @@ class AccountMove(models.Model):
     def action_claim(self):
         active_id = self.id
         commission_lines = self.env['invoice.commission.line'].search([('invoice_sale_order_id', '=', active_id)])
-
-        account_debit = self.env['res.config.settings'].search([])[-1] or False
+        try:
+            account_debit = self.env['res.config.settings'].search([])[-1] or False
+        except Exception:
+            raise UserError(_("Save your settings agian !"))
 
         if account_debit.account_commission_debit.id:
             if not self.is_claim:
@@ -130,7 +132,7 @@ class AccountMove(models.Model):
                         'context': {
                             'default_customer_sales_person': selected_records.customer_sales_person.id,
                             'default_total_commission': rec.hash_amount,
-                            'default_invoice_id':  selected_records.id,
+                            'default_invoice_id': selected_records.id,
                             'default_product_id_selected': [(6, 0, selected_records.product_id_selected.ids)],
 
                         },
@@ -154,3 +156,22 @@ class AccountMove(models.Model):
                     }
             else:
                 raise UserError(_('You Can Not Select More Than One customer sales person In this Action !'))
+
+
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+    product_price_unit = fields.Float(string="product price unite")
+    cast = fields.Float(string="product price unite")
+
+
+class SaleOrder(models.Model):
+    _inherit = 'sale.order'
+
+    def _action_confirm(self):
+        active_id = self.id
+        commission_lines = self.env['sale.order.line'].search([('order_id', '=', active_id)])
+        for x in commission_lines:
+            x.update({'product_price_unit' : x.product_id.standard_price})
+            x.update({'cast': x.product_id.standard_price * x.product_uom_qty})
+

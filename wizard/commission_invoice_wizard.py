@@ -18,6 +18,7 @@ class Commission_Invoice_Wizard(models.TransientModel):
         sale_order = self.env['sale.order'].search([('id','=',active_ids)])
         sale_order_line = self.env['sale.order.line'].search([('order_id', '=', sale_order.id)])
         invoiceTotal = 0
+
         for x in sale_order_line:
             invoiceTotal += x.price_total
 
