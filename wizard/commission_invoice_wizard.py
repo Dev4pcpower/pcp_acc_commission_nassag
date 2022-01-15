@@ -18,6 +18,12 @@ class Commission_Invoice_Wizard(models.TransientModel):
         sale_order = self.env['sale.order'].search([('id','=',active_ids)])
         sale_order_line = self.env['sale.order.line'].search([('order_id', '=', sale_order.id)])
         invoiceTotal = 0
+        cast =0
+        discount = 0
+        for x in sale_order_line:
+            discount += x.discount
+        for x in sale_order_line:
+            cast += x.cast
 
         for x in sale_order_line:
             invoiceTotal += x.price_total
@@ -25,8 +31,10 @@ class Commission_Invoice_Wizard(models.TransientModel):
         for active_id in commission_lines:
             lab_req = self.env['commission.line'].search([('sale_order_id','=',active_ids)])
             total = 0
+
             for rec in lab_req:
                 total += rec.qty * rec.commission_value
+
             for i in lab_req:
                 i.validity_status = 'invoice'
                 if not i.is_invoiced:
@@ -47,6 +55,8 @@ class Commission_Invoice_Wizard(models.TransientModel):
                         'is_commission': True,
                         'total_commission':total,
                         'invoice_amount':invoiceTotal,
+                        'cast': cast,
+                        'discount': discount,
                     }
                 else:
                     raise UserError(_('All ready Invoiced.'))

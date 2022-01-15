@@ -32,6 +32,7 @@
         'views/sale_order_commission_invoice.xml',
         'views/res_config_settings_views.xml',
         'views/report_invoice_sales.xml',
+        'views/report_account_move.xml',
         'views/account_move.xml',
     ],
     # only loaded in demonstration mode

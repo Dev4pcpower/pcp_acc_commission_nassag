@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-
         <record id="account_move_form_view_inherit" model="ir.ui.view">
                     <field name="name">account_move_inherit_form</field>
                     <field name="model">account.move</field>
@@ -16,8 +15,7 @@
                         </xpath>
                     </field>
                 </record>
-
-               <record id="account_bank_statement_form_view_inherit" model="ir.ui.view">
+        <record id="account_bank_statement_form_view_inherit" model="ir.ui.view">
                     <field name="name">account_bank_statement_inherit_form</field>
                     <field name="model">account.bank.statement</field>
                     <field name="inherit_id" ref="account.view_bank_statement_form"/>
@@ -65,6 +63,5 @@
               </p>
             </field>
         </record>
-
     </data>
 </odoo>

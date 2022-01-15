@@ -1,5 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import Warning, UserError
+from odoo import tools
 from datetime import date, datetime
 
 
@@ -60,6 +61,36 @@ class AccountBankStatement(models.Model):
         return res
 
 
+
+
+class ReportAccountMove(models.Model):
+    _name = 'report.profit'
+    _auto = False
+
+    id = fields.Many2one('account.move', string='Invoice ID')
+    partner_id = fields.Many2one('res.partner', string='Invoice ID')
+    payment_state = fields.Char("payment state")
+    invoice_amount = fields.Float("invoice amount")
+    cast = fields.Float("Cast")
+    total_commission = fields.Float("total commission")
+    discount = fields.Float("Discount")
+    profit = fields.Float("profit")
+
+    def init(self):
+        tools.drop_view_if_exists(self._cr,'report_profit')
+        self._cr.execute("""
+        create or replace view report_profit as (
+        SELECT ACCM.ID ,
+        ACCM.PARTNER_ID,
+        ACCM.payment_STATE, 
+        ACCM.invoice_amount,
+        ACCM.cast,
+        ACCM.total_commission ,
+        accm.discount,
+        (ACCM.invoice_amount - ACCM.cast - ACCM.total_commission  - accm.discount) as profit
+                FROM ACCOUNT_MOVE ACCM
+                    )""")
+
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
@@ -75,6 +106,12 @@ class AccountMove(models.Model):
     hash_amount = fields.Float('Hash Amount')
     product_id_selected = fields.Many2one('product.product', string='Product')
     invoice_amount = fields.Float('Invoice Amount')
+    cast = fields.Float('Cast')
+    discount = fields.Float('Discount')
+    profit = fields.Float('Profit', compute='profit_calc')
+
+    def profit_calc(self):
+        self.profit = self.invoice_amount - self.cast - self.total_commission - self.discount
 
     def action_claim(self):
         active_id = self.id
@@ -172,6 +209,5 @@ class SaleOrder(models.Model):
         active_id = self.id
         commission_lines = self.env['sale.order.line'].search([('order_id', '=', active_id)])
         for x in commission_lines:
-            x.update({'product_price_unit' : x.product_id.standard_price})
+            x.update({'product_price_unit': x.product_id.standard_price})
             x.update({'cast': x.product_id.standard_price * x.product_uom_qty})
-
