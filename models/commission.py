@@ -61,34 +61,6 @@ class AccountBankStatement(models.Model):
         return res
 
 
-
-
-class ReportAccountMove(models.Model):
-    _name = 'report.profit'
-    _auto = False
-
-    id = fields.Many2one('account.move', string='Invoice ID')
-    partner_id = fields.Many2one('res.partner', string='Partner')
-    payment_state = fields.Char("payment state")
-    invoicetotal = fields.Float("invoice amount")
-    cast_amount = fields.Float("Cast")
-    commission = fields.Float("total commission")
-    discount = fields.Float("Discount")
-    profit = fields.Float("profit")
-
-    def init(self):
-        tools.drop_view_if_exists(self._cr, 'report_profit')
-        self._cr.execute("""
-        create or replace view report_profit as (
-        SELECT ACCM.ID ,
-        ACCM.PARTNER_ID,
-        ACCM.payment_STATE, SOL.invoicetotal,sol.commission,sol.cast_amount,sol.discount,
-		(SOL.invoicetotal - sol.commission - sol.cast_amount - sol.discount ) as profit
-FROM ACCOUNT_MOVE ACCM , sale_order SOL
-WHERE ACCM.INVOICE_ORIGIN = SOL.NAME
-                    )""")
-
-
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
@@ -104,24 +76,22 @@ class AccountMove(models.Model):
     hash_amount = fields.Float('Hash Amount')
     product_id_selected = fields.Many2one('product.product', string='Product')
 
-
-
     def action_claim(self):
 
         sale_order = self.env['sale.order'].search([('name', '=', self.invoice_origin)])
         if sale_order.is_commission:
 
-            commission_lines = self.env['commission.line'].search([('sale_order_id','=',sale_order.id)])
+            commission_lines = self.env['commission.line'].search([('sale_order_id', '=', sale_order.id)])
             account_invoice_line_obj = self.env['invoice.commission.line']
             for i in commission_lines:
                 invoice_line_vals = {
-                        'product_id_selected': i.product_id_selected.id,
-                        'qty': i.qty,
-                        'commission_value': i.commission_value,
-                        'customer_sales_person':sale_order.customer_sales_person.id,
-                        'total_commission_per_line': i.total_commission_per_line,
-                        'total_commission_order': i.total_commission_order,
-                    }
+                    'product_id_selected': i.product_id_selected.id,
+                    'qty': i.qty,
+                    'commission_value': i.commission_value,
+                    'customer_sales_person': sale_order.customer_sales_person.id,
+                    'total_commission_per_line': i.total_commission_per_line,
+                    'total_commission_order': i.total_commission_order,
+                }
             self.write({'invoice_commission_line_id': ([(0, 0, invoice_line_vals)])})
 
             active_id = self.id
@@ -222,13 +192,10 @@ class SaleOrder(models.Model):
     discount = fields.Float(string="Discount")
     commission = fields.Float(string="commission")
 
-
-
     def _action_confirm(self):
         active_id = self.id
         commission_lines = self.env['sale.order.line'].search([('order_id', '=', active_id)])
         for x in commission_lines:
-
             x.update({'product_price_unit': x.product_id.standard_price})
             x.update({'cast_amount': x.product_id.standard_price * x.product_uom_qty})
 
@@ -252,7 +219,27 @@ class SaleOrder(models.Model):
         self.update({'discount': discount})
 
 
+class ReportAccountMove(models.Model):
+    _name = 'report.profit'
+    _auto = False
 
+    id = fields.Many2one('account.move', string='Invoice ID')
+    partner_id = fields.Many2one('res.partner', string='Partner')
+    payment_state = fields.Char("payment state")
+    invoicetotal = fields.Float("invoice amount")
+    cast_amount = fields.Float("Cast")
+    commission = fields.Float("total commission")
+    discount = fields.Float("Discount")
+    profit = fields.Float("profit")
 
-
-
+    def init(self):
+        tools.drop_view_if_exists(self._cr, 'report_profit')
+        self._cr.execute("""
+        create or replace view report_profit as (
+        SELECT ACCM.ID ,
+        ACCM.PARTNER_ID,
+        ACCM.payment_STATE, SOL.invoicetotal,sol.commission,sol.cast_amount,sol.discount,
+		(SOL.invoicetotal - sol.commission - sol.cast_amount - sol.discount ) as profit
+FROM ACCOUNT_MOVE ACCM , sale_order SOL
+WHERE ACCM.INVOICE_ORIGIN = SOL.NAME
+                    )""")
