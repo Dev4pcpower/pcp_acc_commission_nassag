@@ -120,7 +120,7 @@ class AccountMove(models.Model):
                     'total_commission_per_line': i.total_commission_per_line,
                     'total_commission_order': i.total_commission_order,
                 }
-        active_ids.write({'invoice_commission_line_id': ([(0, 0, invoice_line_vals)])})
+        self.write({'invoice_commission_line_id': ([(0, 0, invoice_line_vals)])})
 
         active_id = self.id
         commission_lines = self.env['invoice.commission.line'].search([('invoice_sale_order_id', '=', active_id)])
