@@ -68,28 +68,26 @@ class ReportAccountMove(models.Model):
     _auto = False
 
     id = fields.Many2one('account.move', string='Invoice ID')
-    partner_id = fields.Many2one('res.partner', string='Invoice ID')
+    partner_id = fields.Many2one('res.partner', string='Partner')
     payment_state = fields.Char("payment state")
-    invoice_amount = fields.Float("invoice amount")
-    cast = fields.Float("Cast")
-    total_commission = fields.Float("total commission")
+    invoicetotal = fields.Float("invoice amount")
+    cast_amount = fields.Float("Cast")
+    commission = fields.Float("total commission")
     discount = fields.Float("Discount")
     profit = fields.Float("profit")
 
     def init(self):
-        tools.drop_view_if_exists(self._cr,'report_profit')
+        tools.drop_view_if_exists(self._cr, 'report_profit')
         self._cr.execute("""
         create or replace view report_profit as (
         SELECT ACCM.ID ,
         ACCM.PARTNER_ID,
-        ACCM.payment_STATE, 
-        ACCM.invoice_amount,
-        ACCM.cast,
-        ACCM.total_commission ,
-        accm.discount,
-        (ACCM.invoice_amount - ACCM.cast - ACCM.total_commission  - accm.discount) as profit
-                FROM ACCOUNT_MOVE ACCM
+        ACCM.payment_STATE, SOL.invoicetotal,sol.commission,sol.cast_amount,sol.discount,
+		(SOL.invoicetotal - sol.commission - sol.cast_amount - sol.discount ) as profit
+FROM ACCOUNT_MOVE ACCM , sale_order SOL
+WHERE ACCM.INVOICE_ORIGIN = SOL.NAME
                     )""")
+
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -105,15 +103,25 @@ class AccountMove(models.Model):
     total_commission = fields.Float('Total Commission')
     hash_amount = fields.Float('Hash Amount')
     product_id_selected = fields.Many2one('product.product', string='Product')
-    invoice_amount = fields.Float('Invoice Amount')
-    cast = fields.Float('Cast')
-    discount = fields.Float('Discount')
-    profit = fields.Float('Profit', compute='profit_calc')
 
-    def profit_calc(self):
-        self.profit = self.invoice_amount - self.cast - self.total_commission - self.discount
+
 
     def action_claim(self):
+
+        sale_order = self.env['sale.order'].search([('name', '=', self.invoice_origin)])
+        commission_lines = self.env['commission.line'].search([('sale_order_id','=',sale_order.id)])
+        account_invoice_line_obj = self.env['invoice.commission.line']
+        for i in commission_lines:
+            invoice_line_vals = {
+                    'product_id_selected': i.product_id_selected.id,
+                    'qty': i.qty,
+                    'commission_value': i.commission_value,
+                    'customer_sales_person':sale_order.customer_sales_person.id,
+                    'total_commission_per_line': i.total_commission_per_line,
+                    'total_commission_order': i.total_commission_order,
+                }
+        active_ids.write({'invoice_commission_line_id': ([(0, 0, invoice_line_vals)])})
+
         active_id = self.id
         commission_lines = self.env['invoice.commission.line'].search([('invoice_sale_order_id', '=', active_id)])
         try:
@@ -199,15 +207,48 @@ class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
     product_price_unit = fields.Float(string="product price unite")
-    cast = fields.Float(string="product price unite")
+    cast_amount = fields.Float(string="product price unite")
 
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    invoicetotal = fields.Float(string="InvoiceTotal")
+    cast_amount = fields.Float(string="Cast")
+    discount = fields.Float(string="Discount")
+    commission = fields.Float(string="commission")
+
+
+
     def _action_confirm(self):
         active_id = self.id
         commission_lines = self.env['sale.order.line'].search([('order_id', '=', active_id)])
         for x in commission_lines:
+
             x.update({'product_price_unit': x.product_id.standard_price})
-            x.update({'cast': x.product_id.standard_price * x.product_uom_qty})
+            x.update({'cast_amount': x.product_id.standard_price * x.product_uom_qty})
+
+        sale_orders_line = self.env['sale.order.line'].browse(self._context.get('order_id', self.id))
+        lab_req = self.env['commission.line'].search([('sale_order_id', '=', self.id)])
+        invoiceTotal = 0
+        cast = 0
+        discount = 0
+        commission = 0
+        for x in sale_orders_line:
+            discount += x.price_total * (x.discount / 100)
+        for x in sale_orders_line:
+            cast += x.product_id.standard_price * x.product_uom_qty
+        for x in sale_orders_line:
+            invoiceTotal += x.price_total
+        for x in lab_req:
+            commission += x.qty * x.commission_value
+        self.update({'cast_amount': cast})
+        self.update({'invoicetotal': invoiceTotal})
+        self.update({'commission': commission})
+        self.update({'discount': discount})
+
+
+
+
+
+

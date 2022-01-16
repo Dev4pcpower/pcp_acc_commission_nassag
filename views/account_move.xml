@@ -11,7 +11,7 @@
                         </xpath>
                         <xpath expr="//button[@name='button_cancel']" position="after">
                             <button name="action_claim" string="Claim Commission" type="object" groups="account.group_account_invoice"
-                                        attrs="{'invisible' : [('is_commission', '=', False)]}"/>
+                                        />
                         </xpath>
                     </field>
                 </record>
