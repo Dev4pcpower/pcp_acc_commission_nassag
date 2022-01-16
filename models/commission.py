@@ -109,53 +109,57 @@ class AccountMove(models.Model):
     def action_claim(self):
 
         sale_order = self.env['sale.order'].search([('name', '=', self.invoice_origin)])
-        commission_lines = self.env['commission.line'].search([('sale_order_id','=',sale_order.id)])
-        account_invoice_line_obj = self.env['invoice.commission.line']
-        for i in commission_lines:
-            invoice_line_vals = {
-                    'product_id_selected': i.product_id_selected.id,
-                    'qty': i.qty,
-                    'commission_value': i.commission_value,
-                    'customer_sales_person':sale_order.customer_sales_person.id,
-                    'total_commission_per_line': i.total_commission_per_line,
-                    'total_commission_order': i.total_commission_order,
-                }
-        self.write({'invoice_commission_line_id': ([(0, 0, invoice_line_vals)])})
+        if sale_order.is_commission:
 
-        active_id = self.id
-        commission_lines = self.env['invoice.commission.line'].search([('invoice_sale_order_id', '=', active_id)])
-        try:
-            account_debit = self.env['res.config.settings'].search([])[-1] or False
-        except Exception:
-            raise UserError(_("Save your settings agian !"))
-
-        if account_debit.account_commission_debit.id:
-            if not self.is_claim:
-                total = 0
-                for rec in commission_lines:
-                    total += rec.total_commission_per_line
-                self.env['account.move.line'].create([
-                    {
-                        'name': 'claim commission',
-                        'move_id': active_id,
-                        'account_id': account_debit.account_commission_debit.id,
-                        'debit': total,
-                        'credit': 0,
-                    },
-                    {
-                        'name': 'claim commission',
-                        'move_id': active_id,
-                        'account_id': account_debit.account_commission_credit.id,
-                        'debit': 0,
-                        'credit': total,
+            commission_lines = self.env['commission.line'].search([('sale_order_id','=',sale_order.id)])
+            account_invoice_line_obj = self.env['invoice.commission.line']
+            for i in commission_lines:
+                invoice_line_vals = {
+                        'product_id_selected': i.product_id_selected.id,
+                        'qty': i.qty,
+                        'commission_value': i.commission_value,
+                        'customer_sales_person':sale_order.customer_sales_person.id,
+                        'total_commission_per_line': i.total_commission_per_line,
+                        'total_commission_order': i.total_commission_order,
                     }
-                ])
+            self.write({'invoice_commission_line_id': ([(0, 0, invoice_line_vals)])})
+
+            active_id = self.id
+            commission_lines = self.env['invoice.commission.line'].search([('invoice_sale_order_id', '=', active_id)])
+            try:
+                account_debit = self.env['res.config.settings'].search([])[-1] or False
+            except Exception:
+                raise UserError(_("Save your settings agian !"))
+
+            if account_debit.account_commission_debit.id:
+                if not self.is_claim:
+                    total = 0
+                    for rec in commission_lines:
+                        total += rec.total_commission_per_line
+                    self.env['account.move.line'].create([
+                        {
+                            'name': 'claim commission',
+                            'move_id': active_id,
+                            'account_id': account_debit.account_commission_debit.id,
+                            'debit': total,
+                            'credit': 0,
+                        },
+                        {
+                            'name': 'claim commission',
+                            'move_id': active_id,
+                            'account_id': account_debit.account_commission_credit.id,
+                            'debit': 0,
+                            'credit': total,
+                        }
+                    ])
+                else:
+                    raise Warning('All ready Claimed.')
             else:
-                raise Warning('All ready Claimed.')
+                raise UserError(_('add debit and credit account in Sales settings.'))
+            self.write({'is_claim': True})
+            self.write({'claim_state': 'Is Claimed'})
         else:
-            raise UserError(_('add debit and credit account in Sales settings.'))
-        self.write({'is_claim': True})
-        self.write({'claim_state': 'Is Claimed'})
+            raise UserError(_('There Is No Commission In This Invoice !'))
 
     def action_paid(self):
         selected_ids = self.env.context.get('active_ids', [])
