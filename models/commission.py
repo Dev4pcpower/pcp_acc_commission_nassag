@@ -196,10 +196,7 @@ class SaleOrder(models.Model):
 
     def _action_confirm(self):
         active_id = self.id
-        commission_lines = self.env['sale.order.line'].search([('order_id', '=', active_id)])
-        for x in commission_lines:
-            x.update({'product_price_unit': x.product_id.standard_price})
-            x.update({'cast_amount': x.product_id.standard_price * x.product_uom_qty})
+
 
         sale_orders_line = self.env['sale.order.line'].browse(self._context.get('order_id', self.id))
         lab_req = self.env['commission.line'].search([('sale_order_id', '=', self.id)])
