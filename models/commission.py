@@ -226,6 +226,7 @@ class ReportAccountMove(models.Model):
     _auto = False
 
     id = fields.Many2one('account.move', string='Invoice ID')
+    name = fields.Char(string='Invoice Name')
     partner_id = fields.Many2one('res.partner', string='Partner')
     payment_state = fields.Char("payment state")
     invoicetotal = fields.Float("invoice amount")
@@ -238,7 +239,7 @@ class ReportAccountMove(models.Model):
         tools.drop_view_if_exists(self._cr, 'report_profit')
         self._cr.execute("""
         create or replace view report_profit as (
-        SELECT ACCM.ID ,
+        SELECT ACCM.ID ,ACCM.NAME ,
         ACCM.PARTNER_ID,
         ACCM.payment_STATE, SOL.invoicetotal,sol.commission,sol.cast_amount,sol.discount,
 		(SOL.invoicetotal - sol.commission - sol.cast_amount - sol.discount ) as profit
