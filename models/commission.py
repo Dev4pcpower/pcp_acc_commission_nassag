@@ -243,6 +243,6 @@ class ReportAccountMove(models.Model):
         ACCM.PARTNER_ID,
         ACCM.payment_STATE, SOL.invoicetotal,sol.commission,sol.cast_amount,sol.discount,
 		(SOL.invoicetotal - sol.commission - sol.cast_amount - sol.discount ) as profit
-FROM ACCOUNT_MOVE ACCM , sale_order SOL
-WHERE ACCM.INVOICE_ORIGIN = SOL.NAME
-                    )""")
+        FROM ACCOUNT_MOVE ACCM , sale_order SOL
+        WHERE ACCM.INVOICE_ORIGIN = SOL.NAME
+                            )""")
